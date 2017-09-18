@@ -5,7 +5,6 @@ services:
 
 before_script:
   - docker login -u "${DOCKERHUB_USERNAME}" -p "${DOCKERHUB_PASSWORD}"
-  - export IMAGE_TAG="$( [[ ${TRAVIS_TAG} =~ ^v[0-9]+$ ]] && echo ${TRAVIS_TAG} || echo ${TRAVIS_COMMIT} )"
 script:
   - docker build -t infolinks/github-release:${TRAVIS_COMMIT} .
   - |
