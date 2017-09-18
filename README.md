@@ -1,6 +1,6 @@
 # GitHub Release
 
-Create &amp; updates GitHub releases from commits.
+Create & updates GitHub releases from commits.
 
 This container will find the last published GitHub released on the given
 project, and generate a release-notes composed of all commits on the
