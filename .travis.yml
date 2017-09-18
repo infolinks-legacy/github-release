@@ -8,7 +8,6 @@ before_script:
   - export IMAGE_TAG="$( [[ ${TRAVIS_TAG} =~ ^v[0-9]+$ ]] && echo ${TRAVIS_TAG} || echo ${TRAVIS_COMMIT} )"
 script:
   - docker build -t infolinks/github-release:${IMAGE_TAG} .
-  - docker push infolinks/github-release:${IMAGE_TAG}
   - |
     if [[ ${TRAVIS_TAG} =~ ^v[0-9]+$ ]]; then
       docker tag infolinks/github-release:${IMAGE_TAG} infolinks/github-release:latest
