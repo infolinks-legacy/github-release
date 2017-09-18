@@ -9,8 +9,6 @@ before_script:
 script:
   - docker build -t infolinks/github-release:${IMAGE_TAG} .
   - docker push infolinks/github-release:${IMAGE_TAG}
-
-  # for tag builds, update the "latest" tag
   - |
     if [[ ${TRAVIS_TAG} =~ ^v[0-9]+$ ]]; then
       docker tag infolinks/github-release:${IMAGE_TAG} infolinks/github-release:latest
