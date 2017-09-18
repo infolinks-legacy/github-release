@@ -12,6 +12,22 @@ convention of `v1`, `v2`, and so on, starting from the next number after
 the last published release. Therefor, if no published release is found,
 a new release called `v1` is created.
 
+## Examples
+
+To update release notes for a project, run this:
+
+    docker run infolinks/github-release \
+        --token YOUR_GITHUB_ACCESS_TOKEN_HERE \
+        --repo YOUR_GITHUB_OWNER_AND_REPO_HERE \
+        --commit HEAD_COMMIT_SHA_HERE
+
+For example:
+
+    docker run infolinks/github-release \
+        --token abcdefghijklmnopqrstuvwxyz \
+        --repo jack/super-repo \
+        --commit dkh2kjd92kjakcndj499822nd
+
 ## Contributions
 
 Any contribution to the project will be appreciated! Whether it's bug
