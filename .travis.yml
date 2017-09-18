@@ -14,3 +14,11 @@ script:
       docker tag infolinks/github-release:${IMAGE_TAG} infolinks/github-release:latest
       docker push infolinks/github-release:latest
     fi
+after_success:
+  - |
+    if [[ "${TRAVIS_BRANCH}" == "master" ]]; then
+      docker run infolinks/github-release:${IMAGE_TAG} \
+          --token="${GITHUB_ACCESS_TOKEN}" \
+          --repo="${TRAVIS_REPO_SLUG}" \
+          --commit="${TRAVIS_COMMIT}"
+    fi
