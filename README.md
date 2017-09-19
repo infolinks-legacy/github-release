@@ -1,4 +1,6 @@
-# GitHub Release
+# github-release
+
+[![Build Status](https://travis-ci.org/infolinks/github-release.svg?branch=master)](https://travis-ci.org/infolinks/github-release)
 
 Create & updates GitHub releases from commits.
 
