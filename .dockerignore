@@ -1,2 +1,4 @@
 *.iml
+*.md
+LICENSE
 node_modules
