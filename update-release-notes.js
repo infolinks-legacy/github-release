@@ -65,6 +65,7 @@ Promise.resolve( {
        } );
 
 function findLastPublishedRelease( { verbose, owner, repo, ref, head } ) {
+    // TODO arik: include published pre-releases as well
     console.info( `Fetching latest release...` );
     return gitHub.repos.getLatestRelease( { owner, repo } )
                  .then( result => result.data )
