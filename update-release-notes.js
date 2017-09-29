@@ -118,12 +118,25 @@ function findBaseCommitForRelease( { owner, repo, prevRelease, ref, head } ) {
 
 function findAllCommitsForRelease( { owner, repo, prevRelease, ref, base, head } ) {
     console.info( `Comparing commits between ${base} and ${head}...` );
-    return gitHub.repos
-                 .compareCommits( { owner, repo, base, head } )
-                 .then( result => result.data.commits ) // TODO arik: must add paginataion over commits
-                 .then( commits => {
-                     return { owner, repo, prevRelease, ref, base, head, commits };
-                 } );
+    const worker = ( resolve, reject ) => {
+        let commits = [];
+        const addCommits = ( err, res ) => {
+            if( err ) {
+                reject( err );
+            } else {
+                commits = commits.concat( res.data.commits );
+                if( gitHub.hasNextPage( res ) ) {
+                    gitHub.getNextPage( res, addCommits );
+                } else {
+                    resolve( commits );
+                }
+            }
+        };
+        gitHub.repos.compareCommits( { owner, repo, base, head, per_page: 5 }, addCommits );
+    };
+    return new Promise( worker ).then( commits => {
+        return { owner, repo, prevRelease, ref, base, head, commits };
+    } );
 }
 
 function shouldSkipCommit( msg ) {
