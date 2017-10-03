@@ -1,5 +1,8 @@
 node {
-    stage('Build image') {
+    stage( 'Checkout' ) {
+        checkout scm
+    }
+    stage( 'Build image' ) {
         sh 'ls -l'
     }
 }
