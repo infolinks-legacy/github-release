@@ -13,7 +13,7 @@ pipeline {
             }
             steps {
                 script {
-                    sh('cat /etc/os-release')
+                    sh('ls -l /git')
                 }
             }
         }
