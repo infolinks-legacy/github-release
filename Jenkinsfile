@@ -1,5 +1,7 @@
 node {
-    sh 'ls -l'
+    stage('Build image') {
+        sh 'ls -l'
+    }
 }
 /*
 pipeline {
