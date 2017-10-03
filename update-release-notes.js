@@ -13,7 +13,8 @@ const options = require( "command-line-args" )( [
                                                     { name: "token", alias: "t", type: String },
                                                     { name: "repo", alias: "r", type: String },
                                                     { name: "commit", alias: "c", type: String },
-                                                    { name: "verbose", alias: "v", type: Boolean }
+                                                    { name: "verbose", alias: "v", type: Boolean },
+                                                    { name: "publish", alias: "p", type: Boolean, defaultValue: false }
                                                 ] );
 
 // validate we all options
@@ -53,6 +54,13 @@ Promise.resolve( {
        .then( findAllCommitsForRelease )         // adds "commits" to result
        .then( draftChangeLogForRelease )         // adds "changeLog" to result
        .then( findOrCreateDraftRelease )         // adds "nextRelease" to result
+       .then( result => {
+           if( options[ "publish" ] ) {
+               return publishRelease( result );
+           } else {
+               return result;
+           }
+       } )
        .then( () => {
            if( options[ "verbose" ] ) {
                console.info( "Done." );
@@ -221,6 +229,27 @@ function findOrCreateDraftRelease( { owner, repo, prevRelease, ref, base, head, 
                          return gitHub.repos.createRelease( releaseSpec );
                      }
                  } )
+                 .then( () => {
+                     return gitHub.repos
+                                  .getReleases( { owner, repo } )
+                                  .then( result => result.data )
+                                  .then( releases => releases.filter( release => release.draft ) )
+                                  .then( drafts => {
+                                      if( drafts.length === 0 ) {
+                                          throw new Error( "draft release not created or found!" );
+                                      } else {
+                                          return drafts[ 0 ];
+                                      }
+                                  } );
+                 } )
+                 .then( nextRelease => {
+                     return { owner, repo, prevRelease, ref, base, head, commits, changeLog, nextRelease };
+                 } );
+}
+
+function publishRelease( { owner, repo, prevRelease, ref, base, head, commits, changeLog, nextRelease } ) {
+    console.info( `Publishing release '${nextRelease.name}'...` );
+    return gitHub.repos.editRelease( Object.assign( { owner, repo }, nextRelease, { draft: false, prerelease: false } ) )
                  .then( nextRelease => {
                      return { owner, repo, prevRelease, ref, base, head, commits, changeLog, nextRelease };
                  } );
