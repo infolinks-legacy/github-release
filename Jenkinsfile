@@ -7,9 +7,6 @@ pipeline {
         skipStagesAfterUnstable()
         timeout( time: 5, unit: 'MINUTES' )
     }
-    triggers {
-        pollSCM( 'H/2 * * * *' )
-    }
     stages {
         stage( 'Stage1' ) {
             agent {
