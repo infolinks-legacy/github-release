@@ -1,9 +1,24 @@
+node {
+    sh 'ls -l'
+}
+/*
 pipeline {
     agent none
-//    environment {
-//        IMG_BASE = "gcr.io/infolinks-gcr/containers"
-//    }
     stages {
+        stage( 'Build image' ) {
+            steps {
+                script {
+                    def image = docker.build( "infolinks/github-release:${ env.GIT_COMMIT }", '.' )
+                    // can then call methods like image.push() here, or run a command with image.inside():
+                    image.inside( '--net=host -v /mount:/mount:ro' ) {
+                        sh 'some-command.sh'
+                    }
+                }
+                script {
+                    sh( 'ls -l /git' )
+                }
+            }
+        }
         stage( 'Build image' ) {
             agent {
                 docker {
@@ -13,9 +28,10 @@ pipeline {
             }
             steps {
                 script {
-                    sh('ls -l /git')
+                    sh( 'ls -l /git' )
                 }
             }
         }
     }
 }
+*/
