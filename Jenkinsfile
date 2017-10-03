@@ -3,7 +3,7 @@ node {
         checkout scm
     }
     stage( 'Build image' ) {
-        sh 'ls -l'
+        docker.build( "infolinks/github-release:${ env.GIT_COMMIT }" )
     }
 }
 /*
