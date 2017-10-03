@@ -1,6 +1,7 @@
 node {
+    def scmVars
     stage( 'Checkout' ) {
-        def scmVars = checkout scm
+        scmVars = checkout scm
     }
     stage( 'Build image' ) {
         echo scmVars.GIT_COMMIT
