@@ -1,11 +1,10 @@
 node {
-    def scmVars
+    def _scm
     stage( 'Checkout' ) {
-        scmVars = checkout scm
+        _scm = checkout scm
     }
     stage( 'Build image' ) {
-        echo scmVars.GIT_COMMIT
-        docker.build( "infolinks/github-release:${ env.GIT_COMMIT }" )
+        docker.build( "infolinks/github-release:${ _scm.GIT_COMMIT }" )
     }
 }
 /*
