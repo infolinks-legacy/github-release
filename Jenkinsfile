@@ -3,15 +3,22 @@ node {
     stage( 'Checkout' ) {
         _scm = checkout scm
     }
+
+    def _image
     stage( 'Build image' ) {
-        docker.build( "infolinks/github-release:${ _scm.GIT_COMMIT }" )
+        _image = docker.build( "infolinks/github-release:${ _scm.GIT_COMMIT }" )
         // can then call methods like image.push() here, or run a command with image.inside():
-//        image.inside( '--net=host -v /mount:/mount:ro' ) {
-//            sh 'some-command.sh'
-//        }
+        //        image.inside( '--net=host -v /mount:/mount:ro' ) {
+        //            sh 'some-command.sh'
+        //        }
     }
-    if( _scm.GIT_BRANCH == "master" )
+    if( _image && _scm.GIT_BRANCH == "master" )
     {
-        echo "master branch!"
+        stage( 'Update release notes' ) {
+            docker.image( "infolinks/github-release:${_scm.GIT_COMMIT}" )
+        }
+        stage( 'Push image' ) {
+            _image.push( 'latest' )
+        }
     }
 }
