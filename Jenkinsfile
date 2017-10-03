@@ -5,39 +5,13 @@ node {
     }
     stage( 'Build image' ) {
         docker.build( "infolinks/github-release:${ _scm.GIT_COMMIT }" )
+        // can then call methods like image.push() here, or run a command with image.inside():
+//        image.inside( '--net=host -v /mount:/mount:ro' ) {
+//            sh 'some-command.sh'
+//        }
+    }
+    if( _scm.GIT_BRANCH == "master" )
+    {
+        echo "master branch!"
     }
 }
-/*
-pipeline {
-    agent none
-    stages {
-        stage( 'Build image' ) {
-            steps {
-                script {
-                    def image = docker.build( "infolinks/github-release:${ env.GIT_COMMIT }", '.' )
-                    // can then call methods like image.push() here, or run a command with image.inside():
-                    image.inside( '--net=host -v /mount:/mount:ro' ) {
-                        sh 'some-command.sh'
-                    }
-                }
-                script {
-                    sh( 'ls -l /git' )
-                }
-            }
-        }
-        stage( 'Build image' ) {
-            agent {
-                docker {
-                    image 'alpine/git'
-                    args '-v ${WORKSPACE}:/git'
-                }
-            }
-            steps {
-                script {
-                    sh( 'ls -l /git' )
-                }
-            }
-        }
-    }
-}
-*/
