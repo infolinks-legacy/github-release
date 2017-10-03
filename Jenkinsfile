@@ -1,8 +1,9 @@
 node {
     stage( 'Checkout' ) {
-        checkout scm
+        def scm = checkout scm
     }
     stage( 'Build image' ) {
+        echo scm.GIT_COMMIT
         docker.build( "infolinks/github-release:${ env.GIT_COMMIT }" )
     }
 }
