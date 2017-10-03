@@ -1,17 +1,14 @@
 pipeline {
     agent none
-    environment {
-        IMG_BASE = "gcr.io/infolinks-gcr/containers"
-    }
-    options {
-        skipStagesAfterUnstable()
-        timeout( time: 5, unit: 'MINUTES' )
-    }
+//    environment {
+//        IMG_BASE = "gcr.io/infolinks-gcr/containers"
+//    }
     stages {
-        stage( 'Stage1' ) {
+        stage( 'Build image' ) {
             agent {
                 docker {
                     image 'alpine/git'
+                    args '-v ${WORKSPACE}:/git'
                 }
             }
             steps {
