@@ -1,6 +1,7 @@
 node {
+    def scm
     stage( 'Checkout' ) {
-        def scm = checkout scm
+        scm = checkout scm
     }
     stage( 'Build image' ) {
         echo "${scm.GIT_COMMIT}"
