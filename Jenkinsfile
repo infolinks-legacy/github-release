@@ -4,7 +4,6 @@ node {
         _scm = checkout scm
     }
 
-    def gitHubRepoRegex = /https:\/\/github.com\/([\w_-]+\/[\w_-]+).git/
     def gitHubToken = credentials( 'github-arikkfir-access-token' )
 
     def _image
@@ -18,7 +17,8 @@ node {
     if( _image && _scm.GIT_BRANCH == "master" ) {
         stage( 'Generate GitHub release' ) {
             _image.inside {
-                def gitHubRepo = ( _scm.GIT_URL =~ gitHubRepoRegex ).with { it[ 0 ][ 1 ] }
+                def re = /https:\/\/github.com\/([\w_-]+\/[\w_-]+).git/
+                def gitHubRepo = ( _scm.GIT_URL =~ re ).with { it[ 0 ][ 1 ] }
                 // TODO arik: avoid repeating image's entrypoint here; why can't Jenkins just execute the image!?
                 //                echo "Access token: ${accessToken}"
                 //                echo " GitHub repo: ${gitHubRepo}"
