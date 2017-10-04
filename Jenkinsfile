@@ -15,11 +15,12 @@ node {
     }
     if( _image && _scm.GIT_BRANCH == "master" ) {
         stage( 'Generate GitHub release' ) {
-            def gitHubRepo = ( _scm.GIT_URL =~ /https:\/\/github.com\/([\w_-]+\/[\w_-]+).git/ )[ 0 ][ 1 ]
+            def gitHubRepo = ( _scm.GIT_URL =~ /https:\/\/github.com\/([\w_-]+\/[\w_-]+).git/)[ 0 ][ 1 ]
             withCredentials(
                     [ usernamePassword(
                             credentialsId: 'github-arikkfir-access-token',
-                            passwordVariable: 'GH_ACCESS_TOKEN'
+                            passwordVariable: 'GH_ACCESS_TOKEN',
+                            usernameVariable: 'GH_USERNAME'
                     ) ]
             ) {
                 _image.inside {
