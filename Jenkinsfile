@@ -5,9 +5,7 @@ node {
     }
 
     def gitHubToken = credentials( 'github-arikkfir-access-token' )
-    def gitHubRepoMatcher = _scm.GIT_URL =~ /https:\/\/github.com\/([\w_-]+\/[\w_-]+).git/
-    assert gitHubRepoMatcher.matches()
-    def gitHubRepo = gitHubRepoMatcher[ 0 ][ 1 ]
+    def gitHubRepo = ( _scm.GIT_URL =~ /https:\/\/github.com\/([\w_-]+\/[\w_-]+).git/ ).with { it[ 0 ][ 1 ] }
 
     def _image
     stage( 'Build image' ) {
