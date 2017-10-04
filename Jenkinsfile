@@ -44,10 +44,12 @@ pipeline {
             when {
                 branch 'master'
             }
-            environment {
-                RELEASE = readFile "${ WORKSPACE }/release"
-            }
             steps {
+                // discover the release name
+                script {
+                    env.RELEASE = readFile "${ WORKSPACE }/release"
+                }
+
                 echo "${env.RELEASE}"
 //                withDockerRegistry( [ credentialsId: 'dockerhub-infolinksjenkins-username-password' ] ) {
 //                    sh "docker push infolinks/github-release:${ GIT_SHA }"
