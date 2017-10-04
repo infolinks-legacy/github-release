@@ -14,21 +14,20 @@ node {
         //        }
     }
     if( _image && _scm.GIT_BRANCH == "master" ) {
-        stage( 'Generate GitHub release' ) {
-            def gitHubRepo = ( _scm.GIT_URL =~ /https:\/\/github.com\/([\w_-]+\/[\w_-]+).git/ )[ 0 ][ 1 ]
-            withCredentials(
-                    [ usernamePassword(
-                            credentialsId: 'github-arikkfir-access-token',
-                            passwordVariable: 'GH_ACCESS_TOKEN',
-                            usernameVariable: 'GH_USERNAME'
-                    ) ]
-            ) {
+        def gitHubRepo = ( _scm.GIT_URL =~ /https:\/\/github.com\/([\w_-]+\/[\w_-]+).git/ )[ 0 ][ 1 ]
+        def credentialsSpec = [ usernamePassword(
+                credentialsId: 'github-arikkfir-access-token',
+                passwordVariable: 'GH_ACCESS_TOKEN',
+                usernameVariable: 'GH_USERNAME'
+        ) ]
+        withCredentials( credentialsSpec ) {
+            stage( 'Generate GitHub release' ) {
                 _image.inside( "-v ${ WORKSPACE }:/github:rw" ) {
                     // TODO arik: avoid repeating image's entrypoint here; why can't Jenkins just execute the image!?
                     sh "/usr/local/app/update-release-notes.js -t ${ env.GH_ACCESS_TOKEN } -r ${ gitHubRepo } -c ${ _scm.GIT_COMMIT } "
                 }
+                // TODO arik: obtain release from "./release
             }
-            // TODO arik: obtain release from "./release
         }
         //        stage( 'Push image' ) {
         //            docker.withRegistry( credentialsId: 'dockerhub-infolinksjenkins-username-password' ) {
