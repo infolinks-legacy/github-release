@@ -28,11 +28,14 @@ pipeline {
             agent {
                 docker {
                     image "infolinks/github-release:${ env.GIT_COMMIT }"
-                    //args '-v $HOME/.m2:/root/.m2'
                 }
             }
+            when {
+                branch 'master'
+            }
             steps {
-                sh "echo /usr/local/app/update-release-notes.js -t ${ env.GH_ACCESS_TOKEN_PSW } -r ${ gitHubRepo } -c ${ env.GIT_COMMIT } "
+                sh "/usr/local/app/update-release-notes.js -t ${ env.GH_ACCESS_TOKEN_PSW } -r ${ gitHubRepo } -c ${ env.GIT_COMMIT }"
+                sh "mv /github/release ${ WORKSPACE }/release"
             }
         }
 
@@ -42,8 +45,8 @@ pipeline {
         //                branch 'master'
         //            }
         //            steps {
-        //                withDockerRegistry( [ credentialsId: 'registry-creds', url: 'https://registry.yourcompany.com' ] ) {
-        //                    sh "docker push registry.yourcompany.com/company/your-app:${ GIT_SHA }"
+        //                withDockerRegistry( [ credentialsId: 'dockerhub-infolinksjenkins-username-password' ] ) {
+        //                    sh "docker push infolinks/github-release:${ GIT_SHA }"
         //                }
         //            }
         //        }
