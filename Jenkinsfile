@@ -11,8 +11,8 @@ pipeline {
             steps {
                 script {
                     // discover the GitHub repository name, in the format of "owner/repoName", eg. "infolinks/crond"
-                    gitHubRepo = ( env.GIT_URL =~ /https:\/\/github.com\/([\w_-]+\/[\w_-]+).git/ )[ 0 ][ 1 ]
-                    sha = env.GIT_COMMIT
+                    env.GH_REPO = ( env.GIT_URL =~ /https:\/\/github.com\/([\w_-]+\/[\w_-]+).git/ )[ 0 ][ 1 ]
+                    env.GIT_SHA = env.GIT_COMMIT
                 }
             }
         }
@@ -20,7 +20,7 @@ pipeline {
         // build our Docker image locally
         stage( 'Build' ) {
             steps {
-                sh "docker build -t infolinks/github-release:${ env.GIT_COMMIT } ."
+                sh "docker build -t infolinks/github-release:${ env.GIT_SHA } ."
             }
         }
 
@@ -28,14 +28,14 @@ pipeline {
         stage( 'Update release notes' ) {
             agent {
                 docker {
-                    image "infolinks/github-release:${ sha }"
+                    image "infolinks/github-release:${ env.GIT_SHA }"
                 }
             }
             when {
                 branch 'master'
             }
             steps {
-                sh "/usr/local/app/update-release-notes.js -f ${ WORKSPACE }/release -t ${ env.GH_ACCESS_TOKEN_PSW } -r ${ gitHubRepo } -c ${ env.GIT_COMMIT }"
+                sh "/usr/local/app/update-release-notes.js -f ${ WORKSPACE }/release -t ${ env.GH_ACCESS_TOKEN_PSW } -r ${ env.GH_REPO } -c ${ env.GIT_COMMIT }"
             }
         }
 
