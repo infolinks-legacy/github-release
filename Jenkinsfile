@@ -1,4 +1,29 @@
 #!/usr/bin/env groovy
+pipeline {
+    agent any
+    environment {
+    }
+    stages {
+
+        // build our Docker image locally
+        stage( 'Build' ) {
+            steps {
+                sh "docker build -t infolinks/github-release:${ GIT_SHA } ."
+            }
+        }
+//        stage( 'Publish' ) {
+//            when {
+//                branch 'master'
+//            }
+//            steps {
+//                withDockerRegistry( [ credentialsId: 'registry-creds', url: 'https://registry.yourcompany.com' ] ) {
+//                    sh "docker push registry.yourcompany.com/company/your-app:${ GIT_SHA }"
+//                }
+//            }
+//        }
+}   }
+
+/*
 node {
 
     // checkout source code
@@ -55,3 +80,4 @@ node {
         }
     }
 }
+*/
