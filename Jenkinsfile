@@ -18,6 +18,7 @@ node {
             _image.inside {
                 sh "ls -l ${WORKSPACE}"
             }
+            _image.withRun() {}
             // TODO arik: obtain release from "./release
         }
 //        stage( 'Push image' ) {
