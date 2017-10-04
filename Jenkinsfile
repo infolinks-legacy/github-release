@@ -15,7 +15,7 @@ node {
     if( _image && _scm.GIT_BRANCH == "master" )
     {
         stage( 'Update release notes' ) {
-            docker.image( "infolinks/github-release:${_scm.GIT_COMMIT}" )
+            docker.image( "infolinks/github-release:${ _scm.GIT_COMMIT }" ).inside( '--token abc' )
         }
         stage( 'Push image' ) {
             _image.push( 'latest' )
