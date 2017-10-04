@@ -7,11 +7,13 @@ pipeline {
     stages {
 
         // setup common variables
+        def sha
         stage( 'Setup' ) {
             steps {
                 script {
                     // discover the GitHub repository name, in the format of "owner/repoName", eg. "infolinks/crond"
                     gitHubRepo = ( env.GIT_URL =~ /https:\/\/github.com\/([\w_-]+\/[\w_-]+).git/ )[ 0 ][ 1 ]
+                    sha = env.GIT_COMMIT
                 }
             }
         }
@@ -27,7 +29,7 @@ pipeline {
         stage( 'Update release notes' ) {
             agent {
                 docker {
-                    image "infolinks/github-release:${ env.GIT_COMMIT }"
+                    image "infolinks/github-release:${ sha }"
                 }
             }
             when {
