@@ -5,27 +5,25 @@ node {
     }
 
     def gitHubToken = credentials( 'github-arikkfir-access-token' )
-    def gitHubRepoMatcher = _scm.GIT_URL =~ /https:\/\/github.com\/(\w+\/\w+).git/
-    assert gitHubRepoMatcher.hasGroup()
+    def gitHubRepoMatcher = _scm.GIT_URL =~ /https:\/\/github.com\/([\w_-]+\/[\w_-]+).git/
+    assert gitHubRepoMatcher.matches()
     def gitHubRepo = gitHubRepoMatcher[ 0 ][ 1 ]
-    def commit = _scm.GIT_COMMIT
-    def branch = _scm.GIT_BRANCH
 
     def _image
     stage( 'Build image' ) {
-        _image = docker.build( "infolinks/github-release:${ commit }" )
+        _image = docker.build( "infolinks/github-release:${ _scm.GIT_COMMIT }" )
         // can then call methods like image.push() here, or run a command with image.inside():
         //        image.inside( '--net=host -v /mount:/mount:ro' ) {
         //            sh 'some-command.sh'
         //        }
     }
-    if( _image && branch == "master" ) {
+    if( _image && _scm.GIT_BRANCH == "master" ) {
         stage( 'Generate GitHub release' ) {
             _image.inside {
                 // TODO arik: avoid repeating image's entrypoint here; why can't Jenkins just execute the image!?
                 //                echo "Access token: ${accessToken}"
                 //                echo " GitHub repo: ${gitHubRepo}"
-                sh "/usr/local/app/update-release-notes.js -t ${ gitHubToken } -r ${ gitHubRepo } -c ${ commit } "
+                sh "/usr/local/app/update-release-notes.js -t ${ gitHubToken } -r ${ gitHubRepo } -c ${ _scm.GIT_COMMIT } "
             }
             // TODO arik: obtain release from "./release
         }
