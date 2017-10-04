@@ -1,3 +1,4 @@
+#!/usr/bin/env groovy
 node {
     def _scm
     stage( 'Checkout' ) {
@@ -15,10 +16,7 @@ node {
     if( _image && _scm.GIT_BRANCH == "master" ) {
         stage( 'Generate GitHub release' ) {
             def gitHubToken = credentials( 'github-arikkfir-access-token' )
-            def re = /https:\/\/github.com\/([\w_-]+\/[\w_-]+).git/
-            def gitHubRepoRegex = _scm.GIT_URL =~ re
-            def gitHubRepo = gitHubRepoRegex[ 0 ][ 1 ]
-            echo gitHubRepo.class.name
+            def gitHubRepo = ( _scm.GIT_URL =~ /https:\/\/github.com\/([\w_-]+\/[\w_-]+).git/)[ 0 ][ 1 ]
 
             _image.inside {
                 // TODO arik: avoid repeating image's entrypoint here; why can't Jenkins just execute the image!?
