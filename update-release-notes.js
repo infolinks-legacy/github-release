@@ -16,6 +16,7 @@ const options = require( "command-line-args" )( [
                                                     { name: "repo", alias: "r", type: String },
                                                     { name: "commit", alias: "c", type: String },
                                                     { name: "verbose", alias: "v", type: Boolean },
+                                                    { name: "releasefile", alias: "f", type: String },
                                                     { name: "publish", alias: "p", type: Boolean, defaultValue: false }
                                                 ] );
 
@@ -49,6 +50,7 @@ Promise.resolve( {
                      owner: options[ "owner" ],
                      repo: options[ "repo" ],
                      head: options[ "commit" ],
+                     releaseFile: options[ "release-file" ],
                      ref: "master"
                  } )
        .then( findLastPublishedRelease )         // adds "prevRelease, ref, head" to result
@@ -74,7 +76,7 @@ Promise.resolve( {
            process.exit( 1 );
        } );
 
-function findLastPublishedRelease( { verbose, owner, repo, ref, head } ) {
+function findLastPublishedRelease( { verbose, owner, repo, ref, head, releaseFile } ) {
     // TODO arik: include published pre-releases as well
     console.info( `Fetching latest release...` );
     return gitHub.repos.getLatestRelease( { owner, repo } )
@@ -89,10 +91,10 @@ function findLastPublishedRelease( { verbose, owner, repo, ref, head } ) {
                          throw err;
                      }
                  } )
-                 .then( result => Object.assign( {}, result, { ref, head } ) );
+                 .then( result => Object.assign( {}, result, { ref, head, releaseFile } ) );
 }
 
-function findBaseCommitForRelease( { owner, repo, prevRelease, ref, head } ) {
+function findBaseCommitForRelease( { owner, repo, prevRelease, ref, head, releaseFile } ) {
     return Promise.resolve( prevRelease ? prevRelease.tag_name : undefined )
                   .then( tagName => {
                       if( tagName ) {
@@ -122,11 +124,11 @@ function findBaseCommitForRelease( { owner, repo, prevRelease, ref, head } ) {
                       }
                   } )
                   .then( base => {
-                      return { owner, repo, prevRelease, ref, base, head };
+                      return { owner, repo, prevRelease, ref, base, head, releaseFile };
                   } );
 }
 
-function findAllCommitsForRelease( { owner, repo, prevRelease, ref, base, head } ) {
+function findAllCommitsForRelease( { owner, repo, prevRelease, ref, base, head, releaseFile } ) {
     console.info( `Comparing commits between ${base} and ${head}...` );
     const worker = ( resolve, reject ) => {
         let commits = [];
@@ -145,7 +147,7 @@ function findAllCommitsForRelease( { owner, repo, prevRelease, ref, base, head }
         gitHub.repos.compareCommits( { owner, repo, base, head, per_page: 5 }, addCommits );
     };
     return new Promise( worker ).then( commits => {
-        return { owner, repo, prevRelease, ref, base, head, commits };
+        return { owner, repo, prevRelease, ref, base, head, releaseFile, commits };
     } );
 }
 
@@ -158,7 +160,7 @@ function shouldSkipCommit( msg ) {
     return false;
 }
 
-function draftChangeLogForRelease( { owner, repo, prevRelease, ref, base, head, commits } ) {
+function draftChangeLogForRelease( { owner, repo, prevRelease, ref, base, head, releaseFile, commits } ) {
     let changes = "";
     commits.forEach( commitWrapper => {
         let msg = commitWrapper[ "commit" ].message;
@@ -184,10 +186,10 @@ function draftChangeLogForRelease( { owner, repo, prevRelease, ref, base, head, 
                       "Commit | Change\n" +
                       "------ | ------\n" +
                       changes;
-    return { owner, repo, prevRelease, ref, base, head, commits, changeLog };
+    return { owner, repo, prevRelease, ref, base, head, releaseFile, commits, changeLog };
 }
 
-function findOrCreateDraftRelease( { owner, repo, prevRelease, ref, base, head, commits, changeLog } ) {
+function findOrCreateDraftRelease( { owner, repo, prevRelease, ref, base, head, releaseFile, commits, changeLog } ) {
     console.info( `Fetching releases...` );
     return gitHub.repos
                  .getReleases( { owner, repo } )
@@ -246,17 +248,21 @@ function findOrCreateDraftRelease( { owner, repo, prevRelease, ref, base, head, 
                  } )
                  .then( nextRelease => mkdir( "/github" ).then( () => nextRelease ) )
                  .then( nextRelease => new Promise( ( resolve, reject ) => {
-                     fs.writeFile( "/github/release", nextRelease.name, err => {
-                         if( err ) {
-                             reject( err );
-                         } else {
-                             resolve( { owner, repo, prevRelease, ref, base, head, commits, changeLog, nextRelease } );
-                         }
-                     } );
+                     if( releaseFile ) {
+                         fs.writeFile( releaseFile, nextRelease.name, err => {
+                             if( err ) {
+                                 reject( err );
+                             } else {
+                                 resolve( { owner, repo, prevRelease, ref, base, head, releaseFile, commits, changeLog, nextRelease } );
+                             }
+                         } );
+                     } else {
+                         resolve( { owner, repo, prevRelease, ref, base, head, releaseFile, commits, changeLog, nextRelease } );
+                     }
                  } ) );
 }
 
-function publishRelease( { owner, repo, prevRelease, ref, base, head, commits, changeLog, nextRelease } ) {
+function publishRelease( { owner, repo, prevRelease, ref, base, head, releaseFile, commits, changeLog, nextRelease } ) {
     console.info( `Publishing release '${nextRelease.name}'...` );
     return gitHub.repos.editRelease( Object.assign( { owner, repo }, nextRelease, { draft: false, prerelease: false } ) )
                  .then( nextRelease => {

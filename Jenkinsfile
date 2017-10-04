@@ -34,22 +34,25 @@ pipeline {
                 branch 'master'
             }
             steps {
-                sh "/usr/local/app/update-release-notes.js -t ${ env.GH_ACCESS_TOKEN_PSW } -r ${ gitHubRepo } -c ${ env.GIT_COMMIT }"
-                sh "mv /github/release ${ WORKSPACE }/release"
+                sh "/usr/local/app/update-release-notes.js -f ${ WORKSPACE }/release -t ${ env.GH_ACCESS_TOKEN_PSW } -r ${ gitHubRepo } -c ${ env.GIT_COMMIT }"
             }
         }
 
         // publish our Docker image to DockerHub (under the release-name tag (v??) and the 'latest' tag)
-        //        stage( 'Publish' ) {
-        //            when {
-        //                branch 'master'
-        //            }
-        //            steps {
-        //                withDockerRegistry( [ credentialsId: 'dockerhub-infolinksjenkins-username-password' ] ) {
-        //                    sh "docker push infolinks/github-release:${ GIT_SHA }"
-        //                }
-        //            }
-        //        }
+        stage( 'Publish' ) {
+            when {
+                branch 'master'
+            }
+            environment {
+                RELEASE = readFile "${ WORKSPACE }/release"
+            }
+            steps {
+                echo "${env.RELEASE}"
+//                withDockerRegistry( [ credentialsId: 'dockerhub-infolinksjenkins-username-password' ] ) {
+//                    sh "docker push infolinks/github-release:${ GIT_SHA }"
+//                }
+            }
+        }
     }
 }
 
