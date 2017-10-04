@@ -1,21 +1,8 @@
 #!/usr/bin/env groovy
 pipeline {
     agent any
-    environment {
-        GH_ACCESS_TOKEN = credentials( 'github-arikkfir-access-token' )
-    }
-    stages {
 
-        // setup common variables
-        stage( 'Setup' ) {
-            steps {
-                script {
-                    // discover the GitHub repository name, in the format of "owner/repoName", eg. "infolinks/crond"
-                    env.GH_REPO = ( env.GIT_URL =~ /https:\/\/github.com\/([\w_-]+\/[\w_-]+).git/ )[ 0 ][ 1 ]
-                    env.GIT_SHA = env.GIT_COMMIT
-                }
-            }
-        }
+    stages {
 
         // build our Docker image locally
         stage( 'Build image' ) {
@@ -34,8 +21,11 @@ pipeline {
                     image "infolinks/github-release:local"
                 }
             }
+            environment {
+                GH_ACCESS_TOKEN = credentials( 'github-arikkfir-access-token' )
+            }
             steps {
-                sh "/usr/local/app/update-release-notes.js -f ${ WORKSPACE }/release -t ${ env.GH_ACCESS_TOKEN_PSW } -r ${ env.GH_REPO } -c ${ env.GIT_COMMIT }"
+                sh "/usr/local/app/update-release-notes.js -f ${ WORKSPACE }/release -t ${ env.GH_ACCESS_TOKEN_PSW } -r ${ env.GIT_URL } -c ${ env.GIT_COMMIT }"
             }
         }
 
@@ -67,8 +57,11 @@ pipeline {
                     image "infolinks/github-release:local"
                 }
             }
+            environment {
+                GH_ACCESS_TOKEN = credentials( 'github-arikkfir-access-token' )
+            }
             steps {
-                sh "/usr/local/app/update-release-notes.js -p -t ${ env.GH_ACCESS_TOKEN_PSW } -r ${ env.GH_REPO } -c ${ env.GIT_COMMIT }"
+                sh "/usr/local/app/update-release-notes.js -p -t ${ env.GH_ACCESS_TOKEN_PSW } -r ${ env.GIT_URL } -c ${ env.GIT_COMMIT }"
             }
         }
     }
