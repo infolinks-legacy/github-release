@@ -35,9 +35,18 @@ if( !options[ "token" ] ) {
     console.info( `Repository: ${options[ "owner" ]}/${options[ "repo" ]}` );
     console.info( `Commit SHA: ${options[ "commit" ]}` );
 }
-options[ "owner" ] = options[ "repo" ].substring( 0, options[ "repo" ].indexOf( "/" ) );
-options[ "repo" ] = options[ "repo" ].substring( options[ "repo" ].indexOf( "/" ) + 1 );
 
+const gitHubUrlMatch = options[ "repo" ].match( /^https:\/\/github.com\/([\w_-]+)\/([\w_-]+)(?:.git)?$/ );
+if( gitHubUrlMatch ) {
+    options[ "owner" ] = gitHubUrlMatch[ 1 ];
+    options[ "repo" ] = gitHubUrlMatch[ 2 ];
+}
+
+const gitHubRepoMatch = options[ "repo" ].match( /^([\w_-]+)\/([\w_-]+)$/ );
+if( gitHubRepoMatch ) {
+    options[ "owner" ] = gitHubRepoMatch[ 1 ];
+    options[ "repo" ] = gitHubRepoMatch[ 2 ];
+}
 
 // setup GitHub client
 const GitHubApi = require( "github" );

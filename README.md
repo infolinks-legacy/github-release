@@ -30,6 +30,9 @@ For example:
         --repo jack/super-repo \
         --commit dkh2kjd92kjakcndj499822nd
 
+The `--repo` argument can receive either a GitHub repository URL (eg. https://github.com/infolinks/github-release.git)
+or a GitHub owner/repo pair (eg. "infolinks/github-release").
+
 ## Contributions
 
 Any contribution to the project will be appreciated! Whether it's bug
