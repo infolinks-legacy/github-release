@@ -16,7 +16,7 @@ node {
     {
         stage( 'Generate GitHub release' ) {
             _image.inside {
-                sh '/usr/local/bin/update-release-notes.js'
+                sh '/usr/local/app/update-release-notes.js'
             }
             // TODO arik: obtain release from "./release
         }
