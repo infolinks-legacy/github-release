@@ -18,7 +18,7 @@ pipeline {
         }
 
         // build our Docker image locally
-        stage( 'Build' ) {
+        stage( 'Build image' ) {
             steps {
                 sh "docker build -t infolinks/github-release:local ."
             }
@@ -26,13 +26,13 @@ pipeline {
 
         // create/update GitHub release
         stage( 'Update release notes' ) {
+            when {
+                branch 'master'
+            }
             agent {
                 docker {
                     image "infolinks/github-release:local"
                 }
-            }
-            when {
-                branch 'master'
             }
             steps {
                 sh "/usr/local/app/update-release-notes.js -f ${ WORKSPACE }/release -t ${ env.GH_ACCESS_TOKEN_PSW } -r ${ env.GH_REPO } -c ${ env.GIT_COMMIT }"
@@ -40,20 +40,35 @@ pipeline {
         }
 
         // publish our Docker image to DockerHub (under the release-name tag (v??) and the 'latest' tag)
-        stage( 'Publish' ) {
+        stage( 'Publish image' ) {
             when {
                 branch 'master'
             }
             steps {
-                // discover the release name
                 script {
-                    env.RELEASE = readFile "${ WORKSPACE }/release"
+                    def registryUrl = "https://index.docker.io/v1/"
+                    def registryCredentialsId = "dockerhub-infolinksjenkins-username-password"
+                    docker.withRegistry( registryUrl, registryCredentialsId ) {
+                        def image = docker.image( "infolinks/github-release:local" )
+                        image.push( readFile( "${ WORKSPACE }/release" ) )
+                        image.push( 'latest' )
+                    }
                 }
+            }
+        }
 
-                echo "${env.RELEASE}"
-//                withDockerRegistry( [ credentialsId: 'dockerhub-infolinksjenkins-username-password' ] ) {
-//                    sh "docker push infolinks/github-release:${ GIT_SHA }"
-//                }
+        // publish our GitHub release
+        stage( 'Publish GitHub release' ) {
+            when {
+                branch 'master'
+            }
+            agent {
+                docker {
+                    image "infolinks/github-release:local"
+                }
+            }
+            steps {
+                sh "/usr/local/app/update-release-notes.js -p -t ${ env.GH_ACCESS_TOKEN_PSW } -r ${ env.GH_REPO } -c ${ env.GIT_COMMIT }"
             }
         }
     }
