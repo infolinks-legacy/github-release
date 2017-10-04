@@ -15,7 +15,7 @@ node {
     if( _image && _scm.GIT_BRANCH == "master" )
     {
         stage( 'Generate GitHub release' ) {
-            _image.inside( "-v ${ WORKSPACE }:/github --token abc" )
+            _image.inside( "-v ${ WORKSPACE }:/github --token abc" ) {}
             // TODO arik: obtain release from "./release
         }
 //        stage( 'Push image' ) {
