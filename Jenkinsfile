@@ -3,7 +3,6 @@ node {
 
     stage( 'Checkout' ) {
         _scm = checkout scm
-        echo _scm
     }
 
     def _image
@@ -14,12 +13,15 @@ node {
         //            sh 'some-command.sh'
         //        }
     }
-    if( _image && _scm.GIT_BRANCH == "master" )
-    {
+    if( _image && _scm.GIT_BRANCH == "master" ) {
         stage( 'Generate GitHub release' ) {
             _image.inside {
+                // TODO arik: avoid repeating image's entrypoint here; why can't Jenkins just execute the image!?
                 def accessToken = credentials( 'github-arikkfir-access-token' )
-                sh "/usr/local/app/update-release-notes.js --token ${ accessToken } --repo "
+                def gitHubRepo = ( _scm.GIT_URL =~ /https:\/\/github.com\/(\w+\/\w+).git/ ).with { it[ 0 ][ 1 ] }
+                echo "Access token: ${accessToken}"
+                echo " GitHub repo: ${gitHubRepo}"
+                sh "/usr/local/app/update-release-notes.js --token ${ accessToken } --repo ${ gitHubRepo } --commit ${ _scm.GIT_COMMIT } "
             }
             // TODO arik: obtain release from "./release
         }
