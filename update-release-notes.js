@@ -262,10 +262,12 @@ function findOrCreateDraftRelease( { owner, repo, prevRelease, ref, base, head, 
                              if( err ) {
                                  reject( err );
                              } else {
+                                 console.info( `Write release name '${nextRelease.name}' to '${releaseFile}'` );
                                  resolve( { owner, repo, prevRelease, ref, base, head, releaseFile, commits, changeLog, nextRelease } );
                              }
                          } );
                      } else {
+                         console.info( `Not writing release file (use "--releasefile" or "-f" to do so)` );
                          resolve( { owner, repo, prevRelease, ref, base, head, releaseFile, commits, changeLog, nextRelease } );
                      }
                  } ) );
