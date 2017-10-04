@@ -4,8 +4,6 @@ node {
         _scm = checkout scm
     }
 
-    def gitHubToken = credentials( 'github-arikkfir-access-token' )
-
     def _image
     stage( 'Build image' ) {
         _image = docker.build( "infolinks/github-release:${ _scm.GIT_COMMIT }" )
@@ -16,6 +14,7 @@ node {
     }
     if( _image && _scm.GIT_BRANCH == "master" ) {
         stage( 'Generate GitHub release' ) {
+            def gitHubToken = credentials( 'github-arikkfir-access-token' )
             def re = /https:\/\/github.com\/([\w_-]+\/[\w_-]+).git/
             def gitHubRepoRegex = _scm.GIT_URL =~ re
             def gitHubRepo = gitHubRepoRegex[ 0 ][ 1 ]
