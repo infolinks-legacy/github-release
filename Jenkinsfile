@@ -20,7 +20,7 @@ pipeline {
         // build our Docker image locally
         stage( 'Build' ) {
             steps {
-                sh "docker build -t infolinks/github-release:${ env.GIT_SHA } ."
+                sh "docker build -t infolinks/github-release:local ."
             }
         }
 
@@ -28,7 +28,7 @@ pipeline {
         stage( 'Update release notes' ) {
             agent {
                 docker {
-                    image "infolinks/github-release:${ env.GIT_SHA }"
+                    image "infolinks/github-release:local"
                 }
             }
             when {
