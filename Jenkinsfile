@@ -6,6 +6,7 @@ node {
 
     def gitHubToken = credentials( 'github-arikkfir-access-token' )
     def gitHubRepoMatcher = _scm.GIT_URL =~ /https:\/\/github.com\/(\w+\/\w+).git/
+    assert gitHubRepoMatcher.hasGroup()
     def gitHubRepo = gitHubRepoMatcher[ 0 ][ 1 ]
     def commit = _scm.GIT_COMMIT
     def branch = _scm.GIT_BRANCH
