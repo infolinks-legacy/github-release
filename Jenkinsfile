@@ -22,8 +22,8 @@ node {
 
             _image.inside {
                 // TODO arik: avoid repeating image's entrypoint here; why can't Jenkins just execute the image!?
-                //                echo "Access token: ${accessToken}"
-                //                echo " GitHub repo: ${gitHubRepo}"
+                echo "Access token: ${accessToken}"
+                echo " GitHub repo: ${gitHubRepo}"
                 sh "/usr/local/app/update-release-notes.js -t ${ gitHubToken } -r ${ gitHubRepo } -c ${ _scm.GIT_COMMIT } "
             }
             // TODO arik: obtain release from "./release
