@@ -15,15 +15,16 @@ node {
     }
     if( _image && _scm.GIT_BRANCH == "master" ) {
         stage( 'Generate GitHub release' ) {
-            def gitHubToken = credentials( 'github-arikkfir-access-token' )
             def gitHubRepo = ( _scm.GIT_URL =~ /https:\/\/github.com\/([\w_-]+\/[\w_-]+).git/)[ 0 ][ 1 ]
-
-            _image.inside {
-                // TODO arik: avoid repeating image's entrypoint here; why can't Jenkins just execute the image!?
-                echo "Access token: ${ gitHubToken}"
-                echo " GitHub repo: ${gitHubRepo}"
-                sh "/usr/local/app/update-release-notes.js -t ${ gitHubToken } -r ${ gitHubRepo } -c ${ _scm.GIT_COMMIT } "
+            withCredentials( [ string( credentialsId: 'github-arikkfir-access-token', variable: 'GITHUB_ACCESS_TOKEN' ) ] ) {
+                _image.inside {
+                    // TODO arik: avoid repeating image's entrypoint here; why can't Jenkins just execute the image!?
+                    echo "Access token: ${ env.GITHUB_ACCESS_TOKEN }"
+                    echo " GitHub repo: ${ gitHubRepo }"
+                    sh "/usr/local/app/update-release-notes.js -t ${ env.GITHUB_ACCESS_TOKEN } -r ${ gitHubRepo } -c ${ _scm.GIT_COMMIT } "
+                }
             }
+
             // TODO arik: obtain release from "./release
         }
         //        stage( 'Push image' ) {
