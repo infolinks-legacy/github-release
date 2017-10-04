@@ -8,9 +8,11 @@ pipeline {
 
         // setup common variables
         stage( 'Setup' ) {
-            script {
-                // discover the GitHub repository name, in the format of "owner/repoName", eg. "infolinks/crond"
-                gitHubRepo = ( env.GIT_URL =~ /https:\/\/github.com\/([\w_-]+\/[\w_-]+).git/ )[ 0 ][ 1 ]
+            steps {
+                script {
+                    // discover the GitHub repository name, in the format of "owner/repoName", eg. "infolinks/crond"
+                    gitHubRepo = ( env.GIT_URL =~ /https:\/\/github.com\/([\w_-]+\/[\w_-]+).git/ )[ 0 ][ 1 ]
+                }
             }
         }
 
