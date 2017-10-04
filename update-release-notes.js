@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+const fs = require( "fs" );
+const mkdir = require( "mkdir-promise" );
 
 // list of snippets that if found in a commit message, will cause that commit not to be included in the release notes
 const skippers = [
@@ -242,9 +244,16 @@ function findOrCreateDraftRelease( { owner, repo, prevRelease, ref, base, head, 
                                       }
                                   } );
                  } )
-                 .then( nextRelease => {
-                     return { owner, repo, prevRelease, ref, base, head, commits, changeLog, nextRelease };
-                 } );
+                 .then( nextRelease => mkdir( "/github" ).then( () => nextRelease ) )
+                 .then( nextRelease => new Promise( ( resolve, reject ) => {
+                     fs.writeFile( "/github/release", nextRelease.name, err => {
+                         if( err ) {
+                             reject( err );
+                         } else {
+                             resolve( { owner, repo, prevRelease, ref, base, head, commits, changeLog, nextRelease } );
+                         }
+                     } );
+                 } ) );
 }
 
 function publishRelease( { owner, repo, prevRelease, ref, base, head, commits, changeLog, nextRelease } ) {
