@@ -4,7 +4,7 @@ ENV NODE_ENV production
 ADD update-release-notes.js package.json /usr/local/app/
 WORKDIR /usr/local/app/
 RUN npm install && \
-    chmod a+x /usr/local/app/update-release-notes.js \
+    chmod a+x /usr/local/app/update-release-notes.js && \
     mkdir -pv /github && chown node:node /github
 USER node
 ENTRYPOINT ["/usr/local/app/update-release-notes.js"]
