@@ -16,9 +16,10 @@ node {
     }
     if( _image && _scm.GIT_BRANCH == "master" ) {
         stage( 'Generate GitHub release' ) {
+            def re = /https:\/\/github.com\/([\w_-]+\/[\w_-]+).git/
+            def gitHubRepo = ( _scm.GIT_URL =~ re ).with { it[ 0 ][ 1 ] }
+
             _image.inside {
-                def re = /https:\/\/github.com\/([\w_-]+\/[\w_-]+).git/
-                def gitHubRepo = ( _scm.GIT_URL =~ re ).with { it[ 0 ][ 1 ] }
                 // TODO arik: avoid repeating image's entrypoint here; why can't Jenkins just execute the image!?
                 //                echo "Access token: ${accessToken}"
                 //                echo " GitHub repo: ${gitHubRepo}"
