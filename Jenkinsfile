@@ -16,9 +16,10 @@ node {
     {
         stage( 'Generate GitHub release' ) {
             _image.inside {
-                sh "ls -l ${WORKSPACE}"
+                dir("${WORKSPACE}") {
+                    sh 'pwd'
+                }
             }
-            _image.withRun() {}
             // TODO arik: obtain release from "./release
         }
 //        stage( 'Push image' ) {
