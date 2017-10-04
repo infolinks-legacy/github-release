@@ -6,7 +6,7 @@ pipeline {
         // build our Docker image locally
         stage( 'Build' ) {
             steps {
-                sh "docker build -t infolinks/github-release:${ GIT_SHA } ."
+                sh "docker build -t infolinks/github-release:${ env.GIT_COMMIT } ."
             }
         }
 //        stage( 'Publish' ) {
