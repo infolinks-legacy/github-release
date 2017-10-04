@@ -1,7 +1,9 @@
 node {
     def _scm
+
     stage( 'Checkout' ) {
         _scm = checkout scm
+        echo _scm
     }
 
     def _image
@@ -16,20 +18,21 @@ node {
     {
         stage( 'Generate GitHub release' ) {
             _image.inside {
-                sh '/usr/local/app/update-release-notes.js'
+                def accessToken = credentials( 'github-arikkfir-access-token' )
+                sh "/usr/local/app/update-release-notes.js --token ${ accessToken } --repo "
             }
             // TODO arik: obtain release from "./release
         }
-//        stage( 'Push image' ) {
-//            docker.withRegistry( credentialsId: 'dockerhub-infolinksjenkins-username-password' ) {
-//                // TODO arik: also push with release tag
-//                _image.push( 'latest' )
-//            }
-//        }
-//        stage( 'Publish GitHub release' ) {
-//            docker.image( "infolinks/github-release" ).inside( '--token abc' ) {
-//
-//            }
-//        }
+        //        stage( 'Push image' ) {
+        //            docker.withRegistry( credentialsId: 'dockerhub-infolinksjenkins-username-password' ) {
+        //                // TODO arik: also push with release tag
+        //                _image.push( 'latest' )
+        //            }
+        //        }
+        //        stage( 'Publish GitHub release' ) {
+        //            docker.image( "infolinks/github-release" ).inside( '--token abc' ) {
+        //
+        //            }
+        //        }
     }
 }
