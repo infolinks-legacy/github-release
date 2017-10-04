@@ -8,33 +8,34 @@ node {
     def _image
     stage( 'Build image' ) {
         _image = docker.build( "infolinks/github-release:${ _scm.GIT_COMMIT }" )
-        // can then call methods like image.push() here, or run a command with image.inside():
-        //        image.inside( '--net=host -v /mount:/mount:ro' ) {
-        //            sh 'some-command.sh'
-        //        }
     }
+
     if( _image && _scm.GIT_BRANCH == "master" ) {
         def gitHubRepo = ( _scm.GIT_URL =~ /https:\/\/github.com\/([\w_-]+\/[\w_-]+).git/ )[ 0 ][ 1 ]
-        def credentialsSpec = [ usernamePassword(
+        def gitHubAccessTokenCredentialsSpec = [ usernamePassword(
                 credentialsId: 'github-arikkfir-access-token',
                 passwordVariable: 'GH_ACCESS_TOKEN',
                 usernameVariable: 'GH_USERNAME'
         ) ]
-        withCredentials( credentialsSpec ) {
-            stage( 'Generate GitHub release' ) {
+
+        def gitHubRelease
+        stage( 'Generate GitHub release' ) {
+            withCredentials( gitHubAccessTokenCredentialsSpec ) {
                 _image.inside( "-v ${ WORKSPACE }:/github:rw" ) {
-                    // TODO arik: avoid repeating image's entrypoint here; why can't Jenkins just execute the image!?
                     sh "/usr/local/app/update-release-notes.js -t ${ env.GH_ACCESS_TOKEN } -r ${ gitHubRepo } -c ${ _scm.GIT_COMMIT } "
                 }
-                // TODO arik: obtain release from "./release
             }
+            gitHubRelease = readFile "${ env.WORKSPACE }/release"
+            echo gitHubRelease
         }
-        //        stage( 'Push image' ) {
-        //            docker.withRegistry( credentialsId: 'dockerhub-infolinksjenkins-username-password' ) {
-        //                // TODO arik: also push with release tag
-        //                _image.push( 'latest' )
-        //            }
-        //        }
+
+//        stage( 'Push image' ) {
+//            // TODO arik: obtain release from "./release
+//            docker.withRegistry( credentialsId: 'dockerhub-infolinksjenkins-username-password' ) {
+//                // TODO arik: also push with release tag
+//                _image.push( 'latest' )
+//            }
+//        }
         //        stage( 'Publish GitHub release' ) {
         //            docker.image( "infolinks/github-release" ).inside( '--token abc' ) {
         //
