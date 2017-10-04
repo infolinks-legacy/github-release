@@ -39,7 +39,7 @@ node {
 
         // push our image to DockerHub under the release's tag name as well as "latest"
         stage( 'Push image' ) {
-            docker.withDockerRegistry( credentialsId: 'dockerhub-infolinksjenkins-username-password' ) {
+            docker.withRegistry( "https://index.docker.io/v1/", "dockerhub-infolinksjenkins-username-password" ) {
                 _image.push( gitHubRelease )
                 _image.push( 'latest' )
             }
