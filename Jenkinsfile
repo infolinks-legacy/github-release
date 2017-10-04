@@ -45,10 +45,13 @@ node {
             }
         }
 
-        //        stage( 'Publish GitHub release' ) {
-        //            docker.image( "infolinks/github-release" ).inside( '--token abc' ) {
-        //
-        //            }
-        //        }
+        // publish our GitHub release
+        stage( 'Publish GitHub release' ) {
+            withCredentials( gitHubAccessTokenCredentialsSpec ) {
+                _image.inside {
+                    sh "/usr/local/app/update-release-notes.js -p -t ${ env.GH_ACCESS_TOKEN } -r ${ gitHubRepo } -c ${ _scm.GIT_COMMIT } "
+                }
+            }
+        }
     }
 }
