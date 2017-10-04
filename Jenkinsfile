@@ -1,7 +1,18 @@
 #!/usr/bin/env groovy
 pipeline {
     agent any
+    environment {
+        GH_ACCESS_TOKEN = credentials( 'github-arikkfir-access-token' )
+    }
     stages {
+
+        // setup common variables
+        stage( 'Setup' ) {
+            script {
+                // discover the GitHub repository name, in the format of "owner/repoName", eg. "infolinks/crond"
+                gitHubRepo = ( env.GIT_URL =~ /https:\/\/github.com\/([\w_-]+\/[\w_-]+).git/ )[ 0 ][ 1 ]
+            }
+        }
 
         // build our Docker image locally
         stage( 'Build' ) {
@@ -19,8 +30,7 @@ pipeline {
                 }
             }
             steps {
-                sh "cat /etc/os-release"
-                sh "ls -l ${ WORKSPACE }"
+                sh "echo /usr/local/app/update-release-notes.js -t ${ env.GH_ACCESS_TOKEN_PSW } -r ${ gitHubRepo } -c ${ env.GIT_COMMIT } "
             }
         }
 
