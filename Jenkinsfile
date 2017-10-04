@@ -9,17 +9,34 @@ pipeline {
                 sh "docker build -t infolinks/github-release:${ env.GIT_COMMIT } ."
             }
         }
-//        stage( 'Publish' ) {
-//            when {
-//                branch 'master'
-//            }
-//            steps {
-//                withDockerRegistry( [ credentialsId: 'registry-creds', url: 'https://registry.yourcompany.com' ] ) {
-//                    sh "docker push registry.yourcompany.com/company/your-app:${ GIT_SHA }"
-//                }
-//            }
-//        }
-}   }
+
+        // create/update GitHub release
+        stage( 'Update release notes' ) {
+            agent {
+                docker {
+                    image "infolinks/github-release:${ env.GIT_COMMIT }"
+                    //args '-v $HOME/.m2:/root/.m2'
+                }
+            }
+            steps {
+                sh "cat /etc/os-release"
+                sh "ls -l ${ WORKSPACE }"
+            }
+        }
+
+        // publish our Docker image to DockerHub (under the release-name tag (v??) and the 'latest' tag)
+        //        stage( 'Publish' ) {
+        //            when {
+        //                branch 'master'
+        //            }
+        //            steps {
+        //                withDockerRegistry( [ credentialsId: 'registry-creds', url: 'https://registry.yourcompany.com' ] ) {
+        //                    sh "docker push registry.yourcompany.com/company/your-app:${ GIT_SHA }"
+        //                }
+        //            }
+        //        }
+    }
+}
 
 /*
 node {
