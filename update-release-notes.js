@@ -59,7 +59,7 @@ Promise.resolve( {
                      owner: options[ "owner" ],
                      repo: options[ "repo" ],
                      head: options[ "commit" ],
-                     releaseFile: options[ "release-file" ],
+                     releaseFile: options[ "releasefile" ],
                      ref: "master"
                  } )
        .then( findLastPublishedRelease )         // adds "prevRelease, ref, head" to result
