@@ -7,7 +7,6 @@ pipeline {
     stages {
 
         // setup common variables
-        def sha
         stage( 'Setup' ) {
             steps {
                 script {
