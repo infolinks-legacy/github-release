@@ -18,6 +18,7 @@ node {
         stage( 'Generate GitHub release' ) {
             def re = /https:\/\/github.com\/([\w_-]+\/[\w_-]+).git/
             def gitHubRepo = ( _scm.GIT_URL =~ re ).with { it[ 0 ][ 1 ] }
+            echo gitHubRepo.class.name
 
             _image.inside {
                 // TODO arik: avoid repeating image's entrypoint here; why can't Jenkins just execute the image!?
