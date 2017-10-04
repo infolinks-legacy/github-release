@@ -14,13 +14,20 @@ node {
     }
     if( _image && _scm.GIT_BRANCH == "master" )
     {
-        stage( 'Push image' ) {
-            _image.push( 'latest' )
+        stage( 'Generate GitHub release' ) {
+            _image.inside( "-v ${ WORKSPACE }:/github --token abc" )
+            // TODO arik: obtain release from "./release
         }
-        stage( 'Update release notes' ) {
-            docker.image( "infolinks/github-release" ).inside( '--token abc' ) {
-
-            }
-        }
+//        stage( 'Push image' ) {
+//            docker.withRegistry( credentialsId: 'dockerhub-infolinksjenkins-username-password' ) {
+//                // TODO arik: also push with release tag
+//                _image.push( 'latest' )
+//            }
+//        }
+//        stage( 'Publish GitHub release' ) {
+//            docker.image( "infolinks/github-release" ).inside( '--token abc' ) {
+//
+//            }
+//        }
     }
 }
