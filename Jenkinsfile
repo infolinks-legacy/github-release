@@ -15,8 +15,8 @@ node {
     if( _image && _scm.GIT_BRANCH == "master" )
     {
         stage( 'Generate GitHub release' ) {
-            _image.inside( "-v ${ WORKSPACE }:/github" ) {
-                sh 'cat /etc/os-release'
+            _image.inside {
+                sh "ls -l ${WORKSPACE}"
             }
             // TODO arik: obtain release from "./release
         }
