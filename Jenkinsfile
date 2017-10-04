@@ -1,8 +1,6 @@
 #!/usr/bin/env groovy
 pipeline {
     agent any
-    environment {
-    }
     stages {
 
         // build our Docker image locally
