@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 const fs = require( "fs" );
 const mkdir = require( "mkdir-promise" );
+const util = require( "./util" );
 
 // list of snippets that if found in a commit message, will cause that commit not to be included in the release notes
 const skippers = [
@@ -9,6 +10,28 @@ const skippers = [
     "[skip changelog]",
     "[skip changes]"
 ];
+
+// program backbone
+new Promise( ( resolve, reject ) => {
+    try {
+        resolve( util.parseArgs(
+            [
+                { name: "verbose", alias: "v", type: Boolean },
+                { name: "token", alias: "t", type: String, required: true },
+                { name: "repo", alias: "r", type: String, required: true }
+            ]
+        ) );
+    } catch( e ) {
+        reject( e );
+    }
+} ).then( args => Object.assign( {}, args, { repo: util.parseRepo( args.repo ) } ) )
+   .then( args => Object.assign( {}, { args } ) )
+   .then( args => {
+       const gh = new require( "github" )( { debug: false } );
+       gh.authenticate( { type: "token", token: args.token, Promise } );
+       return Object.assign( {}, { args }, { gh } );
+   } );
+
 
 // parse command-line options
 const options = require( "command-line-args" )( [
@@ -54,6 +77,52 @@ const gitHub = new GitHubApi( { debug: false } );
 gitHub.authenticate( { type: "token", token: options[ "token" ], Promise } );
 
 // start processing
+new Promise( ( resolve, reject ) => {
+    fs.exists( "/usr/local/lib/github-release/release", exists => {
+        if( exists ) {
+            fs.readFile( "/usr/local/lib/github-release/release", ( err, data ) => {
+                if( err ) {
+                    reject( err );
+                } else {
+                    resolve( { packageRelease: data } );
+                }
+            } );
+        } else {
+            resolve( { packageRelease: "local" } );
+        }
+    } );
+} ).then( ctx => Object.assign( {}, ctx, {
+       options: {
+           verbose: options[ "verbose" ],
+           owner: options[ "owner" ],
+           repo: options[ "repo" ],
+           ref: "master",
+           head: options[ "commit" ],
+           releaseFile: options[ "releasefile" ]
+       }
+   } ) )
+   .then( ctx => {
+
+   } );
+
+function findLastPublishedRelease( { options } ) {
+    // TODO arik: include published pre-releases as well
+    console.info( `Fetching latest release...` );
+    return gitHub.repos.getLatestRelease( { owner: options.owner, repo: options.repo } )
+                 .then( result => result.data )
+                 .then( prevRelease => {
+                     return { verbose, owner, repo, prevRelease };
+                 } )
+                 .catch( err => {
+                     if( err && err.code === 404 ) {
+                         return { owner, repo, prevRelease: null };
+                     } else {
+                         throw err;
+                     }
+                 } )
+                 .then( result => Object.assign( {}, result, { ref, head, releaseFile } ) );
+}
+
 Promise.resolve( {
                      verbose: options[ "verbose" ],
                      owner: options[ "owner" ],
@@ -85,23 +154,6 @@ Promise.resolve( {
            process.exit( 1 );
        } );
 
-function findLastPublishedRelease( { verbose, owner, repo, ref, head, releaseFile } ) {
-    // TODO arik: include published pre-releases as well
-    console.info( `Fetching latest release...` );
-    return gitHub.repos.getLatestRelease( { owner, repo } )
-                 .then( result => result.data )
-                 .then( prevRelease => {
-                     return { verbose, owner, repo, prevRelease };
-                 } )
-                 .catch( err => {
-                     if( err && err.code === 404 ) {
-                         return { owner, repo, prevRelease: null };
-                     } else {
-                         throw err;
-                     }
-                 } )
-                 .then( result => Object.assign( {}, result, { ref, head, releaseFile } ) );
-}
 
 function findBaseCommitForRelease( { owner, repo, prevRelease, ref, head, releaseFile } ) {
     return Promise.resolve( prevRelease ? prevRelease.tag_name : undefined )
