@@ -1,45 +1,83 @@
+// list of snippets that if found in a commit message, will cause that commit not to be included in the release notes
+const skippers = [
+    "[skip release notes]",
+    "[skip relnotes]",
+    "[skip changelog]",
+    "[skip changes]"
+];
+
 /**
- * Finds the last published release and its referenced commit SHA, adding them to the context.
+ * Collects all commits between configured base commit to the head commit.
  * @param gh GitHub client
- * @param repo repository spec (owner, repo)
- * @return {Promise<{lastPublishedRelease,base}>}
+ * @param repo repo spec
+ * @param base base commit (starting range)
+ * @param head head commit (end range)
+ * @return {Promise<[]>}
  */
-function findLastPublishedReleaseAndBaseCommit( gh, repo ) {
-    console.info( `Fetching latest published release...` );
-    return gh.repos.getReleases( repo )
-             .then( result => result.data )
-             .then( releases => releases.filter( rel => !rel.draft ) )
-             .then( releases => releases.filter( rel => rel.name.match( /^v\d+$/ ) ) )
-             .then( releases => releases.length ? releases[ 0 ] : undefined )
-             .then( lastPublishedRelease => {
-                 if( lastPublishedRelease ) {
-                     let releaseName = lastPublishedRelease.name;
-                     let tagName = lastPublishedRelease.tag_name;
-                     console.info( `Fetching commit SHA of tag '${tagName}' from release '${releaseName}'` );
-                     return gh.repos.getShaOfCommitRef( Object.assign( {}, repo, { ref: tagName } ) )
-                              .then( result => result.data.sha )
-                              .then( base => Object.assign( {}, { lastPublishedRelease, base } ) );
-                 } else {
-                     console.info( `No published release found; finding first commit on 'master'...` );
-                     return gh.repos.getCommits( Object.assign( {}, repo, { sha: "master", per_page: 1 } ) )
-                              .then( result => {
-                                  if( gh.hasLastPage( result ) ) {
-                                      return gh.getLastPage( result ).then( result => result.data[ 0 ] );
-                                  } else {
-                                      throw new Error( `failed to find first commit of 'master'` );
-                                  }
-                              } )
-                              .then( commit => commit.sha )
-                              .then( base => Object.assign( {}, { lastPublishedRelease: null, base } ) );
-                 }
-             } );
+function collectCommitsFromBaseToHead( gh, repo, base, head ) {
+    console.info( `Fetching commits '${base}...${head}'...` );
+    return new Promise( ( resolve, reject ) => {
+        let commits = [];
+        const addCommits = ( err, res ) => {
+            if( err ) {
+                reject( err );
+            } else {
+                commits = commits.concat( res.data.commits );
+                if( gh.hasNextPage( res ) ) {
+                    // noinspection JSIgnoredPromiseFromCall
+                    gh.getNextPage( res, addCommits );
+                } else {
+                    console.info( `Found ${commits.length} commits` );
+                    resolve( commits );
+                }
+            }
+        };
+        const params = Object.assign( {}, repo, { base, head, per_page: 50 } );
+        // noinspection JSIgnoredPromiseFromCall
+        gh.repos.compareCommits( params, addCommits );
+    } );
 }
 
-function findOrCreateDraftRelease() {
-    // TODO arik: implement
+/**
+ * Generates a change-log from collected commits.
+ * @param commits commits array
+ * @return String
+ */
+function generateChangeLog( commits ) {
+    function shouldSkipCommit( msg ) {
+        for( let i = 0; i < skippers.length; i++ ) {
+            if( msg.indexOf( skippers[ i ] ) >= 0 ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    let changes = "";
+    commits.forEach( commitWrapper => {
+        let msg = commitWrapper[ "commit" ].message;
+        if( !shouldSkipCommit( msg ) ) {
+            msg = msg.replace( /\n/g, "<br>" );
+            msg = msg.replace( /\|/g, "\\|" );
+            let author = commitWrapper.author;
+            if( !author ) {
+                author = commitWrapper.committer;
+            }
+            if( !author ) {
+                author = { "login": "unknown" };
+                console.warn( "did not receive 'author' nor 'committer' for commit: ", commitWrapper );
+            }
+            changes = `${commitWrapper.sha} | @${author.login}: ${msg}\n` + changes;
+        }
+    } );
+    return "Changes in this release:\n" +
+           "\n" +
+           "Commit | Change\n" +
+           "------ | ------\n" +
+           changes;
 }
 
-exports = {
-    findLastPublishedReleaseAndBaseCommit,
-    findOrCreateDraftRelease
+module.exports = {
+    collectCommitsFromBaseToHead,
+    generateChangeLog
 };

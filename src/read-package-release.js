@@ -10,17 +10,19 @@ const packageReleaseFile = "/usr/local/lib/github-release/release";
 function readPackageReleaseAsPromise() {
     return new Promise( ( resolve, reject ) => fs.exists( packageReleaseFile, exists => {
         if( exists ) {
-            fs.readFile( packageReleaseFile, ( err, data ) => {
+            fs.readFile( packageReleaseFile, ( err, packageRelease ) => {
                 if( err ) {
                     reject( err );
+                } else if( !packageRelease ) {
+                    resolve( "local" );
                 } else {
-                    resolve( { packageRelease: data } );
+                    resolve( (packageRelease + "").trim() );
                 }
             } );
         } else {
-            resolve( { packageRelease: "local" } );
+            resolve( "local" );
         }
     } ) );
 }
 
-exports = readPackageReleaseAsPromise;
+module.exports = readPackageReleaseAsPromise;

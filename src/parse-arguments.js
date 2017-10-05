@@ -17,10 +17,10 @@ function parseGitHubRepositoryUrl( url ) {
 
     const gitHubRepoMatch = url.match( /^([\w_-]+)\/([\w_-]+)$/ );
     if( gitHubRepoMatch ) {
-        return { owner: gitHubUrlMatch[ 1 ], repo: gitHubUrlMatch[ 2 ] };
+        return { owner: gitHubRepoMatch[ 1 ], repo: gitHubRepoMatch[ 2 ] };
     }
 
-    throw new Error( `illegal repository: ${ctx.args.repo}` );
+    throw new Error( `illegal repository: ${url}` );
 }
 
 // arguments definitions
@@ -55,12 +55,13 @@ function parseArguments() {
 
     // return
     return {
-        verbose: args.verbose,
-        token: args.token,
-        repo: args.repo,
-        commit: args.commit,
-        releasefile: args.releasefile,
-        publish: args.publish
+        verbose: !!args[ "verbose" ],
+        token: args[ "token" ],
+        repo: args[ "repo" ],
+        commit: args[ "commit" ],
+        releasefile: args[ "releasefile" ],
+        publish: !!args[ "publish" ]
     };
 }
-exports = parseArguments;
+
+module.exports = parseArguments;

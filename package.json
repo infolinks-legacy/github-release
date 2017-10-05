@@ -15,7 +15,6 @@
     "homepage": "https://github.com/infolinks/github-release",
     "dependencies": {
         "command-line-args": "^4.0.7",
-        "github": "^11.0.0",
-        "mkdir-promise": "^1.0.0"
+        "github": "^11.0.0"
     }
 }
