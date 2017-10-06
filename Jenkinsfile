@@ -32,7 +32,6 @@ pipeline {
             }
         }
 
-
         // publish our Docker image to DockerHub (under the release-name tag (v??) and the 'latest' tag)
         stage( 'Publish image' ) {
             when {
