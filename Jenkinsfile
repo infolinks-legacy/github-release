@@ -7,6 +7,7 @@ pipeline {
         // when NOT "master" branch, build our Docker image locally
         stage( 'Build local image' ) {
             steps {
+                // TODO arik: avoid using "local" tag; use unique build ID & commit, or something
                 sh "docker build -t infolinks/github-release:local ."
             }
         }
